@@ -2,13 +2,33 @@ services:
 
   app:
     build: .
+    container_name: minha-app-node
     ports:
-      - "3000:3000"
+      - "3000:80"
 
   banco:
-    image: mysql:latest
+    image: mysql:8.0-alpine
+    container_name: meu-banco-mysql
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: sistema
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: sistema 
     ports:
       - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - rede-app
+    
+volumes:
+  mysql-data:
+
+networks:
+  rede-app:
+    driver: bridge

@@ -22,9 +22,11 @@ COPY --from=bulder --chown=nodejs: app/package*.json ./
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/app ./app
 
-ENV DB_PASSWORD=123456
+ENV NODE_ENV=production
 
-ENV PORT=80
+USER nodejs
+
+ENV PORT 80
 EXPOSE 80
 
 CMD ["node", "app/server.js"]
