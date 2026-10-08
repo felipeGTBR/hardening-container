@@ -8,11 +8,13 @@ O projeto fornecido possui uma aplicação funcional, porém sua configuração 
 
 O desafio consiste em identificar os pontos que podem representar riscos e realizar o **hardening do ambiente**, mantendo a aplicação funcionando normalmente.
 
+Durante a atividade, também será necessário aplicar uma estratégia básica de gerenciamento de informações sensíveis para o ambiente local, utilizando **variáveis de ambiente por meio de um arquivo `.env`**.
+
 A atividade deverá ser realizada considerando os conceitos apresentados na aula de **Segurança de Containers**.
 
 ---
 
-## Cenário
+# Cenário
 
 Uma equipe de desenvolvimento criou uma aplicação web utilizando Docker.
 
@@ -33,6 +35,8 @@ Você faz parte da equipe responsável por corrigir essas configurações.
 
 Seu objetivo é reduzir a superfície de ataque e aplicar o princípio do menor privilégio, sem comprometer o funcionamento da aplicação.
 
+Além disso, informações sensíveis utilizadas pela aplicação não deverão permanecer diretamente escritas no código ou nas configurações versionadas do projeto.
+
 ---
 
 # Estrutura inicial
@@ -41,6 +45,7 @@ O projeto possui a seguinte estrutura:
 
 ```text
 projeto/
+
 ├── app/
 ├── docs/
 ├── Dockerfile
@@ -112,23 +117,70 @@ Qual seria o impacto de um atacante obter controle de uma aplicação que está 
 
 ---
 
-# Etapa 4 — Proteção de informações sensíveis
+# Etapa 4 — Gerenciamento de informações sensíveis
 
-Verifique se existem senhas, tokens, chaves ou outras informações sensíveis armazenadas diretamente no `Dockerfile` ou em configurações que serão incorporadas à imagem.
+Verifique se existem senhas, tokens, chaves ou outras informações sensíveis armazenadas diretamente no `Dockerfile`, `docker-compose.yml`, código da aplicação ou outros arquivos do projeto.
 
-Essas informações não devem fazer parte da imagem construída.
+Essas informações não devem fazer parte da imagem construída nem permanecer diretamente escritas em arquivos que serão versionados.
 
-Identifique os dados sensíveis existentes no projeto e altere a configuração para que essas informações sejam fornecidas de maneira apropriada durante a execução.
+Para o ambiente local, utilize um arquivo `.env` para armazenar os valores sensíveis necessários para a execução da aplicação.
+
+Por exemplo:
+
+```text
+.env
+```
+
+As informações sensíveis devem ser referenciadas por meio de variáveis de ambiente, e não escritas diretamente nas configurações do projeto.
+
+O `docker-compose.yml` deverá utilizar essas variáveis durante a inicialização dos serviços.
+
+### Proteção do arquivo `.env`
+
+O arquivo `.env` contém informações sensíveis e **não deve ser enviado para o repositório Git**.
+
+Configure o `.gitignore` para impedir que esse arquivo seja versionado.
+
+O projeto também deverá possuir um arquivo:
+
+```text
+.env.example
+```
+
+Esse arquivo deverá apresentar apenas os nomes das variáveis necessárias, sem armazenar seus valores reais.
+
+Exemplo:
+
+```env
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+```
+
+O `.env.example` pode ser versionado porque não contém os valores reais dos secrets.
 
 ### Atenção
 
-Não basta apenas esconder a informação em outra variável dentro do mesmo arquivo.
+O objetivo não é simplesmente mover a senha para outro arquivo.
 
-O objetivo é evitar que informações sensíveis sejam incorporadas às camadas da imagem ou versionadas junto ao código.
+Você deverá garantir que:
 
-### Pergunta
+* a senha não esteja diretamente no `Dockerfile`;
+* a senha não esteja diretamente no `docker-compose.yml`;
+* a senha não esteja no código da aplicação;
+* o `.env` não seja enviado para o Git;
+* o `.env.example` não contenha valores reais;
+* a aplicação continue recebendo as informações necessárias por meio de variáveis de ambiente.
 
-Por que armazenar uma senha diretamente no `Dockerfile` representa um risco mesmo que a aplicação esteja funcionando corretamente?
+### Perguntas
+
+1. Por que armazenar uma senha diretamente no `Dockerfile` representa um risco mesmo que a aplicação esteja funcionando corretamente?
+
+2. Por que o arquivo `.env` não deve ser enviado para o repositório?
+
+3. Qual é a finalidade do arquivo `.env.example`?
+
+4. Qual é a diferença entre armazenar uma senha diretamente no `docker-compose.yml` e utilizar uma variável de ambiente fornecida pelo `.env`?
 
 ---
 
@@ -193,6 +245,8 @@ Verifique se existem configurações que:
 * expõem serviços sem necessidade;
 * aumentam o impacto de um possível comprometimento.
 
+O objetivo é garantir que cada container possua somente os acessos necessários para realizar sua função.
+
 ---
 
 # Etapa 8 — Documentação
@@ -204,8 +258,6 @@ HARDENING.md
 ```
 
 Esse arquivo deverá documentar o trabalho realizado.
-
-Inclua:
 
 ## 1. Problemas encontrados
 
@@ -227,20 +279,7 @@ Para cada alteração, explique:
 * qual objetivo de segurança foi alcançado;
 * qual risco foi reduzido.
 
-## 3. Validação
-
-Apresente evidências de que:
-
-* a aplicação continua funcionando;
-* os containers estão executando corretamente;
-* os serviços possuem apenas a exposição necessária;
-* o usuário configurado está correto;
-* os limites de recursos foram aplicados;
-* a imagem foi analisada.
-
-Utilize prints ou resultados de comandos quando necessário.
-
-## 4. Análise final
+## 3. Análise final
 
 Responda:
 
@@ -252,9 +291,13 @@ Responda:
 
 4. Como o princípio do menor privilégio foi aplicado?
 
-5. Como o projeto poderia receber novas verificações de segurança automaticamente em uma pipeline CI/CD?
+5. Por que o `.env` não deve ser enviado para o repositório?
 
-6. Quais medidas adicionais poderiam ser aplicadas caso essa aplicação fosse executada em Kubernetes?
+6. Qual é a função do `.env.example`?
+
+7. Como o projeto poderia receber novas verificações de segurança automaticamente em uma pipeline CI/CD?
+
+8. Quais medidas adicionais poderiam ser aplicadas caso essa aplicação fosse executada em Kubernetes?
 
 ---
 
@@ -264,35 +307,20 @@ A entrega deverá conter:
 
 ```text
 projeto/
+
 ├── app/
 ├── docs/
 ├── Dockerfile
 ├── docker-compose.yml
+├── .env.example
+├── .gitignore
 └── HARDENING.md
 ```
+
+O arquivo `.env` deverá existir no ambiente local para permitir a execução da aplicação, porém **não deverá ser enviado para o repositório**.
+
+O `.env.example` deverá ser enviado para o repositório e conter somente a estrutura das variáveis necessárias, sem seus valores reais.
 
 O projeto deverá estar funcional após as alterações.
 
 O `HARDENING.md` deverá apresentar o diagnóstico, as medidas aplicadas e as evidências da validação.
-
----
-
-# Critérios de avaliação
-
-A avaliação considerará:
-
-* identificação dos riscos de segurança;
-* aplicação correta das técnicas de hardening;
-* utilização do princípio do menor privilégio;
-* redução da superfície de ataque;
-* proteção de informações sensíveis;
-* controle de exposição dos serviços;
-* controle de recursos;
-* validação das alterações;
-* qualidade da documentação;
-* manutenção do funcionamento da aplicação.
-
-
-Como você faria para impedir que uma imagem com uma vulnerabilidade considerada crítica avançasse para as próximas etapas da pipeline?
-
-Esse desafio relaciona a prática de hardening com os conceitos de **Shift Left**, **Security as Code** e integração de segurança ao ciclo CI/CD.
