@@ -98,7 +98,7 @@ A imagem final deve conter somente o necessário para executar a aplicação.
 ### Pergunta
 
 Por que uma imagem menor e com menos componentes pode reduzir a superfície de ataque?
-
+    A quantidade de binários é menor, logo, fica menos propícios a falhas de segurança
 ---
 
 # Etapa 3 — Princípio do menor privilégio
@@ -114,6 +114,7 @@ Depois da alteração, valide qual usuário está sendo utilizado dentro do cont
 ### Pergunta
 
 Qual seria o impacto de um atacante obter controle de uma aplicação que está sendo executada com privilégios administrativos dentro do container?
+     Obteria o controle total da aplicação podendo roubar segredos e credenciais, manipular logs e evidencias, mapear a rede interna em busca de outros dispositivos e etc.
 
 ---
 
@@ -175,12 +176,13 @@ Você deverá garantir que:
 ### Perguntas
 
 1. Por que armazenar uma senha diretamente no `Dockerfile` representa um risco mesmo que a aplicação esteja funcionando corretamente?
-
+    se caso a imagem for enviada para um registro público (como o Docker Hub) ou um repositório compartilhado, qualquer usuário poderá baixar a imagem, inspecionar seu conteúdo ou camadas e descobrir credenciais críticas
 2. Por que o arquivo `.env` não deve ser enviado para o repositório?
-
+    por causa do vazamento de credenciais, chaves de api, tokens e senhas
 3. Qual é a finalidade do arquivo `.env.example`?
-
+    Ele funciona como um template seguro para o projeto. Ele lista quais variáveis de ambiente a aplicação exige para rodar, mas sem expor os valores reais ou sensíveis
 4. Qual é a diferença entre armazenar uma senha diretamente no `docker-compose.yml` e utilizar uma variável de ambiente fornecida pelo `.env`?
+    hardcoded nunca será boa prática. O segredo pode acabar ficando exposto. ja com o .env, ficaria aparecendo só o ${DB_PASSWORD} enquanto o segredo fica isolado
 
 ---
 
@@ -211,6 +213,8 @@ Se um banco de dados é utilizado apenas pela aplicação, existe necessidade de
 
 Justifique.
 
+    Não, não há necessidade. pois, expor a porta diretamente para a máquina hospedeira é uma prática desnecessária e que aumenta o risco de segurança.
+
 ---
 
 # Etapa 6 — Controle de recursos
@@ -231,6 +235,7 @@ Depois, observe como os limites definidos protegem o ambiente contra consumo exc
 ### Pergunta
 
 O que pode acontecer com outros serviços de um host caso um único container consiga consumir continuamente toda a CPU ou memória disponível?
+    iria acontecer o esgotamento de recursos, CPU, memória e o OOM Killer
 
 ---
 
