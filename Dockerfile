@@ -1,6 +1,6 @@
 # em containers, a gente só vai hospedar a aplicação, temos que otimizar, rodar o container de forma otimizada
 # para nao ter lixo dentro do container. É aí que entra o multi stage build
-FROM node:20-alpine AS bulder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 # Copia apenas os arquivos essenciais e o node_modules já limpo (apenas com prod dependencies)
-COPY --from=bulder --chown=nodejs: app/package*.json ./
+COPY --from=builder --chown=nodejs:nodejs /app/package*.json ./
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/app ./app
 
